@@ -12,9 +12,11 @@ tofu plan
 tofu apply
 ```
 
-State is local (`terraform.tfstate`, gitignored) — fine for a single-operator
-setup. If this ever needs multiple people applying changes, migrate to an S3
-backend first.
+State is stored remotely in S3 (`s3://nicolepaul-io-infra-tfstate-322859817636/nicolepaul-io-infra/terraform.tfstate`),
+with versioning enabled and native S3 state locking (`use_lockfile`, OpenTofu
+>= 1.10 - no DynamoDB table needed). Anyone with AWS credentials for this
+account can run `tofu plan`/`apply` from a clean checkout - no local state
+file to hand off.
 
 After `apply`, wire up each app:
 
