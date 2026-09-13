@@ -1,0 +1,5 @@
+%{ for name, app in apps ~}
+${app.domain} {
+	reverse_proxy ${name}:${app_port}
+}
+%{ endfor ~}

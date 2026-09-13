@@ -1,0 +1,23 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+%{ for name, app in apps ~}
+
+  ${name}:
+    image: ${ecr_repo_urls[name]}:latest
+    restart: unless-stopped
+    expose:
+      - "${app_port}"
+%{ endfor ~}
+
+volumes:
+  caddy_data:
+  caddy_config:

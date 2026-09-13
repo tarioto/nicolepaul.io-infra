@@ -1,0 +1,26 @@
+#!/bin/bash
+set -euxo pipefail
+
+dnf update -y
+dnf install -y docker
+systemctl enable --now docker
+
+mkdir -p /usr/libexec/docker/cli-plugins
+curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-aarch64 \
+  -o /usr/libexec/docker/cli-plugins/docker-compose
+chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+
+mkdir -p /opt/apps
+
+cat > /opt/apps/docker-compose.yml <<'COMPOSE_EOF'
+${docker_compose_yml}
+COMPOSE_EOF
+
+cat > /opt/apps/Caddyfile <<'CADDY_EOF'
+${caddyfile}
+CADDY_EOF
+
+cd /opt/apps
+# Only start Caddy on first boot - app services are pulled/started by each
+# app's own CI deploy once an image actually exists in ECR.
+docker compose up -d caddy
