@@ -28,14 +28,11 @@ data "aws_subnets" "default" {
   }
 }
 
-data "aws_ami" "al2023_arm64" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["al2023-ami-*-arm64"]
-  }
+data "aws_ssm_parameter" "al2023_arm64" {
+  # AWS's official pointer to the current standard (non-minimal) AL2023 AMI -
+  # a name filter is fragile here since it also matches the "minimal" variant,
+  # which ships without the SSM agent.
+  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64"
 }
 
 # ---------------------------------------------------------------------------
@@ -149,7 +146,7 @@ resource "aws_iam_instance_profile" "instance" {
 # ---------------------------------------------------------------------------
 
 resource "aws_instance" "web" {
-  ami                    = data.aws_ami.al2023_arm64.id
+  ami                    = data.aws_ssm_parameter.al2023_arm64.value
   instance_type          = var.instance_type
   subnet_id              = data.aws_subnets.default.ids[0]
   vpc_security_group_ids = [aws_security_group.web.id]
